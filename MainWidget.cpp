@@ -17,6 +17,7 @@
 #include <QRegularExpression>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
+#include <QDesktopWidget>
 #include <QMenu>
 #include <QStyle>
 
@@ -215,7 +216,7 @@ void Widget::showEvent(QShowEvent *event)
             Qt::LeftToRight,
             Qt::AlignCenter,
             size(),
-            QGuiApplication::screenAt(pos())->geometry())
+            QApplication::desktop()->screenGeometry(this))
                 );
 }
 
