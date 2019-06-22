@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Application Launcher
+Name[es]=Lanzador de aplicaciones
+Comment=Generic aplicaciones launcher
+Comment[es]=Lanzador de aplicaciones generico
+Exec=applauncher
+Icon=applauncher
+Terminal=false
+Categories=Development;
+StartupWMClass=applauncher

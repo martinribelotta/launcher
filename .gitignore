@@ -2,3 +2,8 @@
 *.moc
 *.d
 *.pro.user
+moc_*
+ui_*
+.qmake*
+Makefile
+applauncher

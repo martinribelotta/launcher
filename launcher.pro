@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = launcher
+TARGET = applauncher
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -37,11 +37,29 @@ FORMS += \
         MainWidget.ui \
         launcheritem.ui
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
-
 # Single Application implementation
 #include(SingleApplication/singleapplication.pri)
 #DEFINES += QAPPLICATION_CLASS=QApplication
+
+unix {
+    QMAKE_LFLAGS_RELEASE += -static-libstdc++ -static-libgcc
+    QMAKE_LFLAGS_DEBUG += -static-libstdc++ -static-libgcc
+    isEmpty(PREFIX) {
+        PREFIX = /usr
+    }
+
+    target.path = $$PREFIX/bin
+
+    desktopfile.files = applauncher.desktop
+    desktopfile.path = $$PREFIX/share/applications
+
+    iconfiles.files = resources/applauncher.svg resources/applauncher.png
+    iconfiles.path = $$PREFIX/share/icons/default/256x256/apps/
+
+    INSTALLS += desktopfile
+    INSTALLS += iconfiles
+    INSTALLS += target
+}
+
+DISTFILES += \
+    applauncher.desktop
