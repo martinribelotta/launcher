@@ -24,14 +24,13 @@
 #include <QtDebug>
 
 #ifdef Q_OS_WIN
-constexpr auto CONF_PATH= "./launcher-conf.json";
 constexpr auto PATH_SEPARATOR = ';';
-constexpr auto RESOURCE_RELATIVE_PATH = "./resources";
 #else
 constexpr auto PATH_SEPARATOR = ':';
-constexpr auto CONF_PATH= "../share/applauncher/launcher-conf.json";
-constexpr auto RESOURCE_RELATIVE_PATH = "../share/applauncher/resources";
 #endif
+constexpr auto CONF_NAME = "launcher-conf.json";
+constexpr auto SHARE_DIR = "applauncher";
+constexpr auto RESOURCE_DIR = "resources";
 
 static QByteArray readEntireFile(const QString& path)
 {
@@ -44,18 +43,43 @@ static QByteArray readEntireFile(const QString& path)
     return {};
 }
 
-static QString appFile() {
-    return qEnvironmentVariableIsSet("APPDIR")?
-        qgetenv("ARGV0") : QApplication::instance()->applicationFilePath();
+static bool isAppImage()
+{
+#ifdef Q_OS_WIN
+    // In windows be linke as appImage
+    return true;
+#else
+    return qEnvironmentVariableIsSet("APPDIR");
+#endif
 }
 
-static QString appPath() {
+static QString pathJoin(const QStringList& parts)
+{
+    return parts.join(QDir::separator());
+}
+
+static QString appFile()
+{
+    return isAppImage()? qgetenv("ARGV0") : QApplication::instance()->applicationFilePath();
+}
+
+static QString appPath()
+{
     return QFileInfo(appFile()).absolutePath();
+}
+
+static QString resPath()
+{
+    return isAppImage()?
+                        pathJoin({ appPath(), RESOURCE_DIR }):
+                        pathJoin({ appPath(), "..", "share", SHARE_DIR, RESOURCE_DIR });
 }
 
 static QString configurationFileName()
 {
-    return QDir(appPath()).absoluteFilePath(CONF_PATH);
+    return isAppImage()?
+                        pathJoin({ appPath(), CONF_NAME }):
+                        pathJoin({ appPath(), "..", "share", SHARE_DIR, CONF_NAME });
 }
 
 static QJsonObject loadConfig()
@@ -82,11 +106,12 @@ static void adjustInitialEnv()
             homePath = homePaths.first();
         qputenv("HOME", homePath.toLocal8Bit());
     }
+    auto app = appFile().toLocal8Bit();
     auto appDir = appPath().toLocal8Bit();
-    auto resDir = QDir{appDir}.absoluteFilePath(RESOURCE_RELATIVE_PATH).toLocal8Bit();
+    auto resDir = resPath().toLocal8Bit();
 
+    qputenv("APPLICATION_FILE_PATH", app);
     qputenv("APPLICATION_DIR_PATH", appDir);
-    qputenv("APPLICATION_FILE_PATH", appFile().toLocal8Bit());
     qputenv("APPLICATION_RESOURCE_PATH", resDir);
 }
 
@@ -217,7 +242,7 @@ void Widget::showEvent(QShowEvent *event)
             Qt::AlignCenter,
             size(),
             QApplication::desktop()->screenGeometry(this))
-                );
+        );
 }
 
 void Widget::hideEvent(QHideEvent *event)
