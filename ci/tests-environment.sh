@@ -22,7 +22,7 @@ sudo chmod a+x /usr/bin/pydeployqt
 
 MXE=mxe-i686-w64-mingw32.static-
 
-sudo apt-get install  -y --allow-unauthenticated \
+sudo apt-get install  -y --no-install-recommends --force-yes --allow-unauthenticated \
 	gcc-8 g++-8 build-essential \
 	qt59base qt59tools qt59svg qt59imageformats qt59x11extras libglu1-mesa-dev \
 	wget fuse \
