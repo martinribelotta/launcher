@@ -1,0 +1,43 @@
+language: cpp
+sudo: required
+dist: trusty
+
+os: linux
+
+env:
+  global:
+    - MXE=mxe-i686-w64-mingw32.shared-
+
+before_script:
+  - git fetch --unshallow
+  - sudo add-apt-repository --yes ppa:beineri/opt-qt593-trusty
+  - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
+  - echo "deb http://pkg.mxe.cc/repos/apt trusty main" | sudo tee /etc/apt/sources.list.d/mxeapt.list
+  - sudo apt-get update -qq --allow-unauthenticated
+  - sudo apt-get install -y --allow-unauthenticated \
+        gcc-8 g++-8 build-essential \
+        qt59base qt59tools qt59svg qt59imageformats qt59x11extras libglu1-mesa-dev \
+        wget fuse \
+        ${MXE}gcc ${MXE}g++ \
+        ${MXE}qtbase ${MXE}qtsvg ${MXE}qttools ${MXE}qtwinextras ${MXE}qscintilla2
+  - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 90 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+  - gcc --version
+  - sudo wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O /usr/bin/linuxdeployqt
+  - sudo chmod a+x /usr/bin/linuxdeployqt
+
+script:
+  - /opt/qt*/bin/qmake CONFIG+=release CONFIG+=force_debug_info 
+  - make -j4
+  - make install INSTALL_ROOT=/tmp/applauncher
+  - linuxdeployqt /tmp/applauncher/usr/share/applications/applauncher.desktop -appimage -executable=/tmp/applauncher/usr/bin/applauncher
+
+after_success:
+  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
+  # quick fix for issue 223
+  - if [ "$TRAVIS_TAG" != "$TRAVIS_BRANCH" ] && [ "$TRAVIS_BRANCH" != "master" ]; then export TRAVIS_EVENT_TYPE=pull_request; fi
+  - bash ./upload.sh ./Application_Launcher-*-x86_64.AppImage
+
+branches:
+  except:
+    - # Do not build tags that we create when we upload to GitHub Releases
+    - /^(?i:continuous)$/
