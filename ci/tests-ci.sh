@@ -29,4 +29,4 @@ export MXEQT=${MXE}/${MXE_PREFIX}/qt5
 export PATH=${MXE}/bin:${PATH}
 ${MXEQT}/bin/qmake CONFIG+=release CONFIG+=force_debug_info
 make -j4
-zip appimage.zip  AppImage-${VERSION}-win32.zip
+zip AppImage-${VERSION}-win32.zip applaunch.exe
