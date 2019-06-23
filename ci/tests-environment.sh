@@ -25,9 +25,7 @@ MXE=mxe-i686-w64-mingw32.static-
 sudo apt-get install  -y --no-install-recommends --force-yes --allow-unauthenticated \
 	gcc-8 g++-8 build-essential \
 	qt59base qt59tools qt59svg qt59imageformats qt59x11extras libglu1-mesa-dev \
-	wget fuse \
-	${MXE}gcc ${MXE}g++ \
-	${MXE}qtbase ${MXE}qtsvg ${MXE}qttools ${MXE}qtwinextras ${MXE}qscintilla2
+	wget fuse ${MXE}gcc ${MXE}g++ ${MXE}qtbase
 
 gcc --version
 # sudo update-alternatives --remove-all gcc
