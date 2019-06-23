@@ -39,7 +39,8 @@ before_script:
   - sudo chmod a+x /usr/bin/linuxdeployqt
 
 script:
-  - /opt/qt*/bin/qmake CONFIG+=release CONFIG+=force_debug_info 
+  - source /opt/qt*/bin/qt*-env.sh
+  - qmake CONFIG+=release CONFIG+=force_debug_info 
   - make -j4
   - make install INSTALL_ROOT=/tmp/applauncher
   - linuxdeployqt /tmp/applauncher/usr/share/applications/applauncher.desktop -appimage -executable=/tmp/applauncher/usr/bin/applauncher
