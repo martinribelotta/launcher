@@ -12,28 +12,17 @@ env:
     - MXEQT=${MXE}/i686-w64-mingw32.static/qt5
     - PATH=${MXE}/bin:${PATH}
 
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:ubuntu-toolchain-r/test'
-      - sourceline: 'ppa:beineri/opt-qt593-trusty'
-    packages:
-      - gcc-8
-      - g++-8
-      - build-essential
-      - qt59base
-      - qt59tools
-      - qt59svg
-      - qt59imageformats
-      - qt59x11extras
-      - libglu1-mesa-dev
-      - wget
-      - fuse
-
 before_script:
+  - sudo add-apt-repository --yes ppa:beineri/opt-qt593-trusty
+  - sudo add-apt-repository --yes ppa:ubuntu-toolchain-r/test
   - echo "deb http://pkg.mxe.cc/repos/apt trusty main" | sudo tee /etc/apt/sources.list.d/mxeapt.list
   - sudo apt-get update -qq --allow-unauthenticated
-  - sudo apt-get install -y --allow-unauthenticated ${MXE}gcc ${MXE}g++ ${MXE}qtbase ${MXE}qtsvg
+  - sudo apt-get install -y --allow-unauthenticated \
+        gcc-8 g++-8 build-essential \
+        qt59base qt59tools qt59svg qt59imageformats qt59x11extras libglu1-mesa-dev \
+        wget fuse \
+        ${MXE}gcc ${MXE}g++ \
+        ${MXE}qtbase ${MXE}qtsvg ${MXE}qttools ${MXE}qtwinextras ${MXE}qscintilla2
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 90 --slave /usr/bin/g++ g++ /usr/bin/g++-8
   - gcc --version
   - sudo wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O /usr/bin/linuxdeployqt
