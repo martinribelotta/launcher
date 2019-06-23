@@ -60,7 +60,11 @@ static QString pathJoin(const QStringList& parts)
 
 static QString appFile()
 {
+#ifndef Q_OS_WIN
     return isAppImage()? qgetenv("ARGV0") : QApplication::instance()->applicationFilePath();
+#else
+    return QApplication::instance()->applicationFilePath();
+#endif
 }
 
 static QString appPath()
