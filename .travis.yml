@@ -6,14 +6,17 @@ os: linux
 
 env:
   global:
-    - MXE=mxe-i686-w64-mingw32.shared-
+    - MXE=mxe-i686-w64-mingw32.static-
+    - MXE_PREFIX=i686-w64-mingw32.static
+    - MXE=/usr/lib/mxe/usr
+    - MXEQT=${MXE}/i686-w64-mingw32.static/qt5
+    - PATH=${MXE}/bin:${PATH}
 
 addons:
   apt:
     sources:
       - sourceline: 'ppa:ubuntu-toolchain-r/test'
       - sourceline: 'ppa:beineri/opt-qt593-trusty'
-      # - sourceline: 'deb http://pkg.mxe.cc/repos/apt trusty main'
     packages:
       - gcc-8
       - g++-8
@@ -26,17 +29,17 @@ addons:
       - libglu1-mesa-dev
       - wget
       - fuse
-      #- mxe-i686-w64-mingw32.shared-gcc
-      #- mxe-i686-w64-mingw32.shared-g++
-      #- mxe-i686-w64-mingw32.shared-qtbase
-      #- mxe-i686-w64-mingw32.shared-qtsvg
-
 
 before_script:
+  - echo "deb http://pkg.mxe.cc/repos/apt trusty main" | sudo tee /etc/apt/sources.list.d/mxeapt.list
+  - sudo apt-get update -qq --allow-unauthenticated
+  - sudo apt-get install --no-install-recommends -y --allow-unauthenticated ${MXE}gcc ${MXE}g++ ${MXE}qtbase ${MXE}qtsvg
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 90 --slave /usr/bin/g++ g++ /usr/bin/g++-8
   - gcc --version
   - sudo wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O /usr/bin/linuxdeployqt
+  - sudo wget https://raw.githubusercontent.com/martinribelotta/pydeployqt/master/deploy.py -O /usr/bin/pydeployqt
   - sudo chmod a+x /usr/bin/linuxdeployqt
+  - sudo chmod a+x /usr/bin/pydeployqt
 
 script:
   - source /opt/qt*/bin/qt*-env.sh
@@ -44,6 +47,10 @@ script:
   - make -j4
   - make install INSTALL_ROOT=/tmp/applauncher
   - linuxdeployqt /tmp/applauncher/usr/share/applications/applauncher.desktop -appimage -executable=/tmp/applauncher/usr/bin/applauncher
+  - make distclean
+  - ${MXEQT}/bin/qmake CONFIG+=release CONFIG+=force_debug_info
+  - make -j4
+  - 
 
 after_success:
   - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
