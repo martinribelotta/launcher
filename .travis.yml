@@ -33,7 +33,7 @@ addons:
 before_script:
   - echo "deb http://pkg.mxe.cc/repos/apt trusty main" | sudo tee /etc/apt/sources.list.d/mxeapt.list
   - sudo apt-get update -qq --allow-unauthenticated
-  - sudo apt-get install --no-install-recommends -y --allow-unauthenticated ${MXE}gcc ${MXE}g++ ${MXE}qtbase ${MXE}qtsvg
+  - sudo apt-get install -y --allow-unauthenticated ${MXE}gcc ${MXE}g++ ${MXE}qtbase ${MXE}qtsvg
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 90 --slave /usr/bin/g++ g++ /usr/bin/g++-8
   - gcc --version
   - sudo wget -c "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage" -O /usr/bin/linuxdeployqt
