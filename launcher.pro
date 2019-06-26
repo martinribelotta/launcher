@@ -56,16 +56,21 @@ unix {
     desktopfile.files = applauncher.desktop
     desktopfile.path = $$PREFIX/share/applications
 
+    appimageintegration.file = desktop-integration.sh
+    appimageintegration.path = $$PREFIX/share/applauncher/
+
     iconfiles.files = resources/applauncher.svg resources/applauncher.png
     iconfiles.path = $$PREFIX/share/icons/default/256x256/apps/
 
     INSTALLS += desktopfile
     INSTALLS += iconfiles
     INSTALLS += target
+    INSTALLS += appimageintegration
 }
 
 DISTFILES += \
-    applauncher.desktop
+    applauncher.desktop \
+    desktop-integration.sh
 
 RESOURCES += \
     images.qrc
