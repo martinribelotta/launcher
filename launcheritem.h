@@ -7,6 +7,8 @@ namespace Ui {
 class LauncherItem;
 }
 
+class QProcess;
+
 class LauncherItem : public QWidget
 {
     Q_OBJECT
@@ -19,8 +21,16 @@ public:
                           QWidget *parent = nullptr);
     ~LauncherItem();
 
+public slots:
+    void startStop();
+
+signals:
+    void stateChange(bool started);
+
 private:
     Ui::LauncherItem *ui;
+    QProcess *manager;
+    QString execPath;
 };
 
 #endif // LAUNCHERITEM_H

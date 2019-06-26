@@ -7,32 +7,39 @@
 #include <QtDebug>
 
 LauncherItem::LauncherItem(const QString &icon, const QString &text, const QString &path, const QString &workdir, QWidget *parent)
-    : QWidget(parent),
-      ui(new Ui::LauncherItem)
+    : QWidget{parent},
+      ui{new Ui::LauncherItem},
+      manager{new QProcess(this)},
+      execPath{path}
 {
     ui->setupUi(this);
     ui->iconButton->setIcon(QIcon(icon));
     ui->textLabel->setText(text);
-    auto manager{new QProcess(this)};
+
     if (!workdir.isEmpty())
         manager->setWorkingDirectory(workdir);
-    connect(ui->iconButton, &QToolButton::clicked, [manager, path]() {
-        switch (manager->state()) {
-        case QProcess::NotRunning:
-            manager->start(path);
-            break;
-        case QProcess::Starting:
-        case QProcess::Running:
-            manager->terminate();
-            break;
-        }
-    });
+    connect(ui->iconButton, &QToolButton::clicked, this, &LauncherItem::startStop);
     connect(manager, &QProcess::stateChanged, [this](QProcess::ProcessState state) {
-        ui->iconButton->setChecked(state == QProcess::Running);
+        bool isStarted = state == QProcess::Running;
+        ui->iconButton->setChecked(isStarted);
+        emit stateChange(isStarted);
     });
 }
 
 LauncherItem::~LauncherItem()
 {
     delete ui;
+}
+
+void LauncherItem::startStop()
+{
+    switch (manager->state()) {
+    case QProcess::NotRunning:
+        manager->start(execPath);
+        break;
+    case QProcess::Starting:
+    case QProcess::Running:
+        manager->terminate();
+        break;
+    }
 }

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/applauncher.png</file>
+        <file>resources/applauncher.svg</file>
+    </qresource>
+</RCC>

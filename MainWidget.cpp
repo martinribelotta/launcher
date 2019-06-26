@@ -1,4 +1,5 @@
 #include "MainWidget.h"
+#include "aboutdialog.h"
 #include "launcheritem.h"
 #include "ui_MainWidget.h"
 
@@ -35,11 +36,9 @@ constexpr auto RESOURCE_DIR = "resources";
 static QByteArray readEntireFile(const QString& path)
 {
     QFile f(path);
-    if (f.open(QFile::ReadOnly)) {
+    if (f.open(QFile::ReadOnly))
         return QTextStream{&f}.readAll().toUtf8();
-    } else {
-        QMessageBox::critical(nullptr, "", QString("file error: %1\n%2").arg(path).arg(f.errorString()));
-    }
+    QMessageBox::critical(nullptr, "", QString("file error: %1\n%2").arg(path).arg(f.errorString()));
     return {};
 }
 
@@ -60,7 +59,7 @@ static QString pathJoin(const QStringList& parts)
 
 static QString appFile()
 {
-#ifndef Q_OS_WIN
+#ifdef Q_OS_LINUX
     return isAppImage()? qgetenv("ARGV0") : QApplication::instance()->applicationFilePath();
 #else
     return QApplication::instance()->applicationFilePath();
@@ -72,18 +71,19 @@ static QString appPath()
     return QFileInfo(appFile()).absolutePath();
 }
 
+static QString sharePath()
+{
+    return pathJoin({ isAppImage()? appPath() : pathJoin({ appPath(), "..", "share" }), SHARE_DIR });
+}
+
 static QString resPath()
 {
-    return isAppImage()?
-                        pathJoin({ appPath(), RESOURCE_DIR }):
-                        pathJoin({ appPath(), "..", "share", SHARE_DIR, RESOURCE_DIR });
+    return pathJoin({ sharePath(), RESOURCE_DIR });
 }
 
 static QString configurationFileName()
 {
-    return isAppImage()?
-                        pathJoin({ appPath(), CONF_NAME }):
-                        pathJoin({ appPath(), "..", "share", SHARE_DIR, CONF_NAME });
+    return pathJoin({ sharePath(), CONF_NAME });
 }
 
 static QJsonObject loadConfig()
@@ -117,6 +117,9 @@ static void adjustInitialEnv()
     qputenv("APPLICATION_FILE_PATH", app);
     qputenv("APPLICATION_DIR_PATH", appDir);
     qputenv("APPLICATION_RESOURCE_PATH", resDir);
+    if (isAppImage())
+        qputenv("APPLICATION_REAL_FILE_PATH",
+                QApplication::instance()->applicationDirPath().toLocal8Bit());
 }
 
 static QString env(const QString& e)
@@ -165,18 +168,18 @@ Widget::Widget(QWidget *parent)
     toggleWindow->setText(tr("Show Launcher"));
     connect(toggleWindow, &QAction::triggered, [this]() { setVisible(!isVisible()); });
     menu->addAction(toggleWindow);
-    menu->addAction(tr("Terminate Launcher"), QApplication::instance(), &QApplication::quit);
-    trayIcon->setContextMenu(menu);
-    connect(trayIcon, &QSystemTrayIcon::activated, this, &QWidget::show);
-    trayIcon->show();
+    menu->addSeparator();
 
     auto sysPath = QProcessEnvironment::systemEnvironment().value("PATH");
     auto newPath = QStringList{};
     for (const QJsonValueRef a: doc.value("path").toArray())
         newPath.append(env(a.toString()));
     newPath.append(sysPath);
-    if (!newPath.isEmpty())
-        qputenv("PATH", newPath.join(PATH_SEPARATOR).toLocal8Bit());
+    if (!newPath.isEmpty()) {
+        auto pathStr = newPath.join(PATH_SEPARATOR);
+        qDebug() << pathStr << newPath;
+        qputenv("PATH", pathStr.toLocal8Bit());
+    }
     auto envObj = doc.value("env").toObject();
     for (auto it = envObj.constBegin(); it != envObj.constEnd(); ++it)
         qputenv(it.key().toLocal8Bit().data(), env(it.value().toString()).toLocal8Bit());
@@ -186,12 +189,15 @@ Widget::Widget(QWidget *parent)
     auto layout = new QGridLayout(ui->scrollAreaWidgetContents);
     for(const QJsonValueRef a: doc.value("applications").toArray()) {
         auto o = a.toObject();
-        layout->addWidget(new LauncherItem{env(o.value("icon").toString()),
-                                           env(o.value("text").toString()),
-                                           env(o.value("exec").toString()),
-                                           env(o.value("work").toString()),
-                                           ui->scrollAreaWidgetContents},
-                          row, col);
+        auto icon = env(o.value("icon").toString());
+        auto text = env(o.value("text").toString());
+        auto exec = env(o.value("exec").toString());
+        auto work = env(o.value("work").toString());
+        auto launcher = new LauncherItem{icon, text, exec, work, ui->scrollAreaWidgetContents};
+        auto action = menu->addAction(QIcon(icon), text, launcher, &LauncherItem::startStop);
+        action->setCheckable(true);
+        connect(launcher, &LauncherItem::stateChange, action, &QAction::setChecked);
+        layout->addWidget(launcher, row, col);
         if (++col == 3)
             { col = 0; row++; }
     }
@@ -201,28 +207,15 @@ Widget::Widget(QWidget *parent)
     connect(ui->buttonShutdown, &QToolButton::clicked,
             QApplication::instance(), &QApplication::quit);
     connect(ui->buttonHelp, &QToolButton::clicked, [this]() {
-        QDialog d(this);
-        QVBoxLayout l(&d);
-        QLabel banner(tr(R"(<center>
-<h2>Multipurponse launcher with<br>
-environment manager</h2><p>
-Copyrigth (c) 2019<br>
-by Martin Ribelotta<br>
-<a href="mailto:martinribelotta@gmail.com">martinribelotta@gmail.com</a>
-</center>)"), &d);
-        QPlainTextEdit ed(&d);
-        QDialogButtonBox b{QDialogButtonBox::Ok, Qt::Horizontal, &d};
-        l.addWidget(&banner);
-        l.addWidget(&ed);
-        l.addWidget(&b);
-        ed.setReadOnly(true);
-        ed.setWordWrapMode(QTextOption::NoWrap);
-        ed.setFont(QFont{"Monospace, Consolas, Courier"});
-        ed.setPlainText(QProcessEnvironment::systemEnvironment().toStringList().join("\n"));
-        d.resize(size() * 0.9);
-        connect(&b, &QDialogButtonBox::accepted, &d, &QDialog::accept);
-        d.exec();
+        AboutDialog(size() * 0.9, this).exec();
     });
+    if (col + row > 0)
+        menu->addSeparator();
+
+    menu->addAction(tr("Terminate Launcher"), QApplication::instance(), &QApplication::quit);
+    trayIcon->setContextMenu(menu);
+    connect(trayIcon, &QSystemTrayIcon::activated, this, &QWidget::show);
+    trayIcon->show();
 }
 
 Widget::~Widget()

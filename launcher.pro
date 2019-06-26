@@ -25,16 +25,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        aboutdialog.cpp \
         launcheritem.cpp \
         main.cpp \
         MainWidget.cpp
 
 HEADERS += \
         MainWidget.h \
+        aboutdialog.h \
         launcheritem.h
 
 FORMS += \
         MainWidget.ui \
+        aboutdialog.ui \
         launcheritem.ui
 
 # Single Application implementation
@@ -63,3 +66,6 @@ unix {
 
 DISTFILES += \
     applauncher.desktop
+
+RESOURCES += \
+    images.qrc
