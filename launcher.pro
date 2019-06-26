@@ -56,16 +56,14 @@ unix {
     desktopfile.files = applauncher.desktop
     desktopfile.path = $$PREFIX/share/applications
 
-    appimageintegration.file = desktop-integration.sh
-    appimageintegration.path = $$PREFIX/bin
+    integration.files = desktop-integration.sh
+    integration.commands = chmod 0755 $$PWD/$$integration.files
+    integration.path = $$PREFIX/bin
 
     iconfiles.files = resources/applauncher.svg resources/applauncher.png
     iconfiles.path = $$PREFIX/share/icons/default/256x256/apps/
 
-    INSTALLS += desktopfile
-    INSTALLS += iconfiles
-    INSTALLS += target
-    INSTALLS += appimageintegration
+    INSTALLS += desktopfile iconfiles integration target
 }
 
 DISTFILES += \
