@@ -57,7 +57,7 @@ unix {
     desktopfile.path = $$PREFIX/share/applications
 
     appimageintegration.file = desktop-integration.sh
-    appimageintegration.path = $$PREFIX/share/applauncher/
+    appimageintegration.path = $$PREFIX/bin
 
     iconfiles.files = resources/applauncher.svg resources/applauncher.png
     iconfiles.path = $$PREFIX/share/icons/default/256x256/apps/
