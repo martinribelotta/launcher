@@ -2,7 +2,7 @@
 
 This program act as launcher for application suite or conjunction of applications with common entry point
 
-![banner](doc/lancher-00.png)  ![1561735344258](/home/martin/Proyectos/git/mribelotta/launcher/doc/tray.png)
+![banner](doc/lancher-00.png)  ![tray](doc/tray.png)
 
 ### Characteristics
 
