@@ -168,6 +168,8 @@ Widget::Widget(QWidget *parent)
         ui->logView->setVisible(!t);
         ui->buttonUpDown->setArrowType(t? Qt::UpArrow : Qt::DownArrow);
     });
+    ui->logView->hide();
+    ui->buttonUpDown->setArrowType(Qt::UpArrow);
 
     auto doc = loadConfig();
 
