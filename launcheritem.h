@@ -8,6 +8,7 @@ class LauncherItem;
 }
 
 class QProcess;
+class QTextBrowser;
 
 class LauncherItem : public QWidget
 {
@@ -18,6 +19,7 @@ public:
                           const QString& text,
                           const QString& path,
                           const QString& workdir,
+                          QTextBrowser *log,
                           QWidget *parent = nullptr);
     ~LauncherItem();
 

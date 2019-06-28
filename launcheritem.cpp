@@ -3,10 +3,31 @@
 
 #include <QProcess>
 #include <QDir>
+#include <QTextBrowser>
+#include <QScrollBar>
 
 #include <QtDebug>
 
-LauncherItem::LauncherItem(const QString &icon, const QString &text, const QString &path, const QString &workdir, QWidget *parent)
+static void insertText(QTextBrowser *b, const QString& t, const QColor& color)
+{
+    auto c = b->textCursor();
+    c.movePosition(QTextCursor::End);
+    c.beginEditBlock();
+    QTextCharFormat fmt;
+    fmt.setForeground(color);
+    c.setCharFormat(fmt);
+    c.insertText(t);
+    c.endEditBlock();
+    b->setTextCursor(c);
+    b->ensureCursorVisible();
+}
+
+LauncherItem::LauncherItem(const QString &icon,
+                           const QString &text,
+                           const QString &path,
+                           const QString &workdir,
+                           QTextBrowser *log,
+                           QWidget *parent)
     : QWidget{parent},
       ui{new Ui::LauncherItem},
       manager{new QProcess(this)},
@@ -23,6 +44,12 @@ LauncherItem::LauncherItem(const QString &icon, const QString &text, const QStri
         bool isStarted = state == QProcess::Running;
         ui->iconButton->setChecked(isStarted);
         emit stateChange(isStarted);
+    });
+    connect(manager, &QProcess::readyReadStandardError, [this, log] () {
+        insertText(log, manager->readAllStandardError(), Qt::darkRed);
+    });
+    connect(manager, &QProcess::readyReadStandardOutput, [this, log] () {
+        insertText(log, manager->readAllStandardOutput(), Qt::darkBlue);
     });
 }
 

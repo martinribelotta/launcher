@@ -60,10 +60,10 @@ static QString pathJoin(const QStringList& parts)
 static QString appFile()
 {
 #ifdef Q_OS_LINUX
-    return isAppImage()? qgetenv("ARGV0") : QApplication::instance()->applicationFilePath();
-#else
-    return QApplication::instance()->applicationFilePath();
+    if (isAppImage())
+        return qgetenv("ARGV0");
 #endif
+    return QApplication::instance()->applicationFilePath();
 }
 
 static QString appPath()
@@ -150,6 +150,25 @@ Widget::Widget(QWidget *parent)
 {
     adjustInitialEnv();
     ui->setupUi(this);
+    ui->logView->setFont(QFont{"Monospace, Consolas, Courier"});
+    ui->logView->setContextMenuPolicy(Qt::CustomContextMenu);
+    auto logViewMenu = new QMenu(this);
+    logViewMenu->addAction(tr("Select All"), ui->logView, &QTextEdit::selectAll);
+    logViewMenu->addAction(tr("Copy"), ui->logView, &QTextEdit::copy);
+    logViewMenu->addSeparator();
+    logViewMenu->addAction(tr("Clear"), ui->logView, &QTextEdit::clear);
+    connect(ui->logView, &QWidget::customContextMenuRequested, [this, logViewMenu](const QPoint& p) {
+        logViewMenu->exec(ui->logView->mapToGlobal(p));
+    });
+    ui->splitter->setStretchFactor(0, 1);
+    ui->splitter->setStretchFactor(1, 0);
+    ui->splitter->setSizes({ 120, 120 });
+    connect(ui->buttonUpDown, &QToolButton::clicked, [this] () {
+        auto t = ui->logView->isVisible();
+        ui->logView->setVisible(!t);
+        ui->buttonUpDown->setArrowType(t? Qt::UpArrow : Qt::DownArrow);
+    });
+
     auto doc = loadConfig();
 
     for (const QJsonValueRef a: doc.value("res").toArray())
@@ -193,7 +212,7 @@ Widget::Widget(QWidget *parent)
         auto text = env(o.value("text").toString());
         auto exec = env(o.value("exec").toString());
         auto work = env(o.value("work").toString());
-        auto launcher = new LauncherItem{icon, text, exec, work, ui->scrollAreaWidgetContents};
+        auto launcher = new LauncherItem{icon, text, exec, work, ui->logView, ui->scrollAreaWidgetContents};
         auto action = menu->addAction(QIcon(icon), text, launcher, &LauncherItem::startStop);
         action->setCheckable(true);
         connect(launcher, &LauncherItem::stateChange, action, &QAction::setChecked);
