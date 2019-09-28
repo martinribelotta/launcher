@@ -71,4 +71,5 @@ DISTFILES += \
     desktop-integration.sh
 
 RESOURCES += \
+    default.qrc \
     images.qrc

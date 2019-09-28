@@ -15,7 +15,7 @@ class LauncherItem : public QWidget
     Q_OBJECT
 
 public:
-    explicit LauncherItem(const QString& icon,
+    explicit LauncherItem(const QIcon &icon,
                           const QString& text,
                           const QString& path,
                           const QString& workdir,

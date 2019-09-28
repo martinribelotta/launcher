@@ -1,0 +1,30 @@
+{
+    "mainIcon": ":/resources/applauncher.png",
+    "mainLabel": "Generic Application Launcher",
+    "path": [
+        "${APPLICATION_DIR_PATH}",
+        "${APPLICATION_DIR_PATH}/../libexec"
+    ],
+    "res": [
+        "/usr/share/pixmaps"
+    ],
+    "env": {
+    },
+    "applications": [
+        {
+            "icon": "theme:terminal",
+            "text": "Terminal",
+            "exec": "x-terminal-emulator"
+        },
+        {
+            "icon": "theme:web-browser",
+            "text": "Browser",
+            "exec": "x-www-browser"
+        },
+        {
+            "icon": "theme:user-home",
+            "text": "File Manager",
+            "exec": "xdg-open ${HOME}"
+        }
+    ]
+}

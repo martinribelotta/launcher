@@ -22,7 +22,7 @@ static void insertText(QTextBrowser *b, const QString& t, const QColor& color)
     b->ensureCursorVisible();
 }
 
-LauncherItem::LauncherItem(const QString &icon,
+LauncherItem::LauncherItem(const QIcon &icon,
                            const QString &text,
                            const QString &path,
                            const QString &workdir,
@@ -34,7 +34,7 @@ LauncherItem::LauncherItem(const QString &icon,
       execPath{path}
 {
     ui->setupUi(this);
-    ui->iconButton->setIcon(QIcon(icon));
+    ui->iconButton->setIcon(icon);
     ui->textLabel->setText(text);
 
     if (!workdir.isEmpty())
