@@ -22,6 +22,8 @@
 #include <QMenu>
 #include <QStyle>
 
+#include <flowlayout.h>
+
 #include <QtDebug>
 
 #ifdef Q_OS_WIN
@@ -198,6 +200,9 @@ Widget::Widget(QWidget *parent)
             qDebug() << err.errorString();
     }
 
+    QJsonObject initialSize = doc.value("initialSize").toObject();
+    resize(initialSize.value("width").toInt(width()), initialSize.value("height").toInt(height()));
+
     for (const QJsonValueRef a: doc.value("res").toArray())
         QDir::addSearchPath("res", env(a.toString()));
 
@@ -232,7 +237,7 @@ Widget::Widget(QWidget *parent)
 
     int row = 0;
     int col = 0;
-    auto layout = new QGridLayout(ui->scrollAreaWidgetContents);
+    auto layout = new FlowLayout(ui->scrollAreaWidgetContents);
     for(const QJsonValueRef a: doc.value("applications").toArray()) {
         auto o = a.toObject();
         auto icon = loadIcon(env(o.value("icon").toString()));
@@ -243,13 +248,13 @@ Widget::Widget(QWidget *parent)
         auto action = menu->addAction(icon, text, launcher, &LauncherItem::startStop);
         action->setCheckable(true);
         connect(launcher, &LauncherItem::stateChange, action, &QAction::setChecked);
-        layout->addWidget(launcher, row, col);
+        layout->addWidget(launcher);
         if (++col == 3)
             { col = 0; row++; }
     }
     if (col==1 || col==2)
-        layout->addItem(newSpacer(), row, col, 1, 3-col);
-    layout->setRowStretch(row + 1, 1);
+        layout->addItem(newSpacer());
+    // layout->setRowStretch(row + 1, 1);
     connect(ui->buttonShutdown, &QToolButton::clicked,
             QApplication::instance(), &QApplication::quit);
     connect(ui->buttonHelp, &QToolButton::clicked, [this]() {

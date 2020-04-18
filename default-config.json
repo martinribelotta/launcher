@@ -18,7 +18,7 @@
         },
         {
             "icon": "theme:web-browser",
-            "text": "Browser",
+            "text": "Browser with big\nname using\nline feed on text",
             "exec": "x-www-browser"
         },
         {

@@ -34,8 +34,10 @@ LauncherItem::LauncherItem(const QIcon &icon,
       execPath{path}
 {
     ui->setupUi(this);
-    ui->iconButton->setIcon(icon);
-    ui->textLabel->setText(text);
+    ui->iconButton->setIcon(icon.isNull()? QIcon(":/resources/applauncher.png") : icon);
+    ui->iconButton->setText(text);
+    ui->iconButton->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+    // ui->textLabel->setText(text);
 
     if (!workdir.isEmpty())
         manager->setWorkingDirectory(workdir);

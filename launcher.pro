@@ -26,6 +26,7 @@ CONFIG += c++11
 
 SOURCES += \
         aboutdialog.cpp \
+        flowlayout.cpp \
         launcheritem.cpp \
         main.cpp \
         MainWidget.cpp
@@ -33,6 +34,7 @@ SOURCES += \
 HEADERS += \
         MainWidget.h \
         aboutdialog.h \
+        flowlayout.h \
         launcheritem.h
 
 FORMS += \
