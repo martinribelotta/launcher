@@ -31,5 +31,4 @@ export MXEQT=${MXE}/${MXE_PREFIX}/qt5
 export PATH=${MXE}/bin:${PATH}
 ${MXEQT}/bin/qmake CONFIG+=release CONFIG+=force_debug_info
 make -j4
-(cd release && zip ../Application_Launcher-${VERSION}-win32.zip applauncher.exe)
-cp ../Application_Launcher-${VERSION}-win32.zip applauncher.exe /tmp/result
+(cd release && zip ../Application_Launcher-${VERSION}-win32.zip applauncher.exe && cp ../Application_Launcher-${VERSION}-win32.zip applauncher.exe /tmp/result)
