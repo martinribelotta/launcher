@@ -24,7 +24,7 @@ MXE=mxe-i686-w64-mingw32.static-
 
 sudo apt-get install  -y --no-install-recommends -o Dpkg::Options::="--force-overwrite" --allow-unauthenticated \
 	gcc-8 g++-8 build-essential \
-	wget fuse ${MXE}gcc ${MXE}g++ ${MXE}qtbase
+	wget fuse ${MXE}gcc ${MXE}g++ ${MXE}qtbase ${MXE}qtsvg
 
 gcc --version
 # sudo update-alternatives --remove-all gcc
