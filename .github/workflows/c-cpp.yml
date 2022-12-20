@@ -21,5 +21,9 @@ jobs:
       run: bash ci/tests-ci.sh
     - uses: actions/upload-artifact@v3
       with:
-        name: Executable artifacts
-        path: /tmp/result
+        name: Linux AppImage
+        path: /tmp/result/*.AppImage
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Windows Executable
+        path: /tmp/result/*.zip
