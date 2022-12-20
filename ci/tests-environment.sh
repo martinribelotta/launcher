@@ -10,7 +10,7 @@ echo "deb http://pkg.mxe.cc/repos/apt bionic main" \
 #echo 'APT::Get::AllowUnauthenticated "true";' \
 ##    | sudo tee /etc/apt/apt.conf.d/99myown
 
-sudo apt-get update -qq --allow-unauthenticated
+sudo apt-get update -qq --allow-unauthenticated --allow-insecure-repositories
 
 sudo fallocate -l 1G /swapfile
 sudo chmod 600 /swapfile
