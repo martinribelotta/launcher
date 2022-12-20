@@ -20,6 +20,8 @@ qmake CONFIG+=release CONFIG+=force_debug_info
 make -j4
 make install INSTALL_ROOT=${INSTALL_DIR}
 linuxdeployqt $DESKTOP_FILE $DEPLOY_OPT -appimage
+mkdir /tmp/result
+cp *.AppImage /tmp/result
 echo ************** WINDOWS BUILD ***********************
 
 make distclean
@@ -30,3 +32,4 @@ export PATH=${MXE}/bin:${PATH}
 ${MXEQT}/bin/qmake CONFIG+=release CONFIG+=force_debug_info
 make -j4
 (cd release && zip ../Application_Launcher-${VERSION}-win32.zip applauncher.exe)
+cp ../Application_Launcher-${VERSION}-win32.zip applauncher.exe /tmp/result

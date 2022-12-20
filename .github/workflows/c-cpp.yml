@@ -19,3 +19,7 @@ jobs:
       run: bash ci/tests-environment.sh
     - name: build
       run: bash ci/tests-ci.sh
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Executable artifacts
+        path: /tmp/result
