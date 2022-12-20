@@ -2,7 +2,7 @@
 
 set -x
 
-source /opt/qt*/bin/qt*-env.sh
+# source /opt/qt*/bin/qt*-env.sh
 
 set -e
 
