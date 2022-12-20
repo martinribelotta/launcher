@@ -26,6 +26,7 @@ LauncherItem::LauncherItem(const QIcon &icon,
                            const QString &text,
                            const QString &path,
                            const QString &workdir,
+                           const QProcessEnvironment &env,
                            QTextBrowser *log,
                            QWidget *parent)
     : QWidget{parent},
@@ -41,16 +42,18 @@ LauncherItem::LauncherItem(const QIcon &icon,
 
     if (!workdir.isEmpty())
         manager->setWorkingDirectory(workdir);
+    qDebug() << "Process" << text << "env:\n\t" << env.toStringList();
+    manager->setProcessEnvironment(env);
     connect(ui->iconButton, &QToolButton::clicked, this, &LauncherItem::startStop);
-    connect(manager, &QProcess::stateChanged, [this](QProcess::ProcessState state) {
+    connect(manager, &QProcess::stateChanged, this, [this](QProcess::ProcessState state) {
         bool isStarted = state == QProcess::Running;
         ui->iconButton->setChecked(isStarted);
         emit stateChange(isStarted);
     });
-    connect(manager, &QProcess::readyReadStandardError, [this, log] () {
+    connect(manager, &QProcess::readyReadStandardError, this, [this, log] () {
         insertText(log, manager->readAllStandardError(), Qt::darkRed);
     });
-    connect(manager, &QProcess::readyReadStandardOutput, [this, log] () {
+    connect(manager, &QProcess::readyReadStandardOutput, this, [this, log] () {
         insertText(log, manager->readAllStandardOutput(), Qt::darkBlue);
     });
 }
@@ -64,11 +67,26 @@ void LauncherItem::startStop()
 {
     switch (manager->state()) {
     case QProcess::NotRunning:
-        manager->start(execPath);
+        start();
         break;
     case QProcess::Starting:
     case QProcess::Running:
-        manager->terminate();
+        stop();
         break;
     }
+}
+
+void LauncherItem::start()
+{
+    auto args = QProcess::splitCommand(execPath);
+    if (args.isEmpty())
+        return;
+    auto cmd = args.first();
+    auto argv = args.mid(1);
+    manager->start(cmd, argv);
+}
+
+void LauncherItem::stop()
+{
+    manager->terminate();
 }

@@ -2,15 +2,7 @@
 <ui version="4.0">
  <class>Widget</class>
  <widget class="QWidget" name="Widget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>471</width>
-    <height>521</height>
-   </rect>
-  </property>
-  <layout class="QVBoxLayout" name="verticalLayout_3">|
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
@@ -95,7 +87,6 @@
          <property name="font">
           <font>
            <pointsize>16</pointsize>
-           <weight>75</weight>
            <bold>true</bold>
           </font>
          </property>
@@ -191,8 +182,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>451</width>
-            <height>104</height>
+            <width>427</width>
+            <height>68</height>
            </rect>
           </property>
          </widget>

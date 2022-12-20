@@ -177,13 +177,13 @@ Widget::Widget(QWidget *parent)
     logViewMenu->addAction(tr("Copy"), ui->logView, &QTextEdit::copy);
     logViewMenu->addSeparator();
     logViewMenu->addAction(tr("Clear"), ui->logView, &QTextEdit::clear);
-    connect(ui->logView, &QWidget::customContextMenuRequested, [this, logViewMenu](const QPoint& p) {
+    connect(ui->logView, &QWidget::customContextMenuRequested, this, [this, logViewMenu](const QPoint& p) {
         logViewMenu->exec(ui->logView->mapToGlobal(p));
     });
     ui->splitter->setStretchFactor(0, 1);
     ui->splitter->setStretchFactor(1, 0);
     ui->splitter->setSizes({ 120, 120 });
-    connect(ui->buttonUpDown, &QToolButton::clicked, [this] () {
+    connect(ui->buttonUpDown, &QToolButton::clicked, this, [this] () {
         auto t = ui->logView->isVisible();
         ui->logView->setVisible(!t);
         ui->buttonUpDown->setArrowType(t? Qt::UpArrow : Qt::DownArrow);
@@ -203,7 +203,8 @@ Widget::Widget(QWidget *parent)
     QJsonObject initialSize = doc.value("initialSize").toObject();
     resize(initialSize.value("width").toInt(width()), initialSize.value("height").toInt(height()));
 
-    for (const QJsonValueRef a: doc.value("res").toArray())
+    auto resArray = doc.value("res").toArray();
+    for (const auto& a: qAsConst(resArray))
         QDir::addSearchPath("res", env(a.toString()));
 
     auto mainIcon = loadIcon(env(doc.value("mainIcon").toString()));
@@ -217,13 +218,14 @@ Widget::Widget(QWidget *parent)
     auto menu = new QMenu(this);
     toggleWindow = new QAction(this);
     toggleWindow->setText(tr("Show Launcher"));
-    connect(toggleWindow, &QAction::triggered, [this]() { setVisible(!isVisible()); });
+    connect(toggleWindow, &QAction::triggered, this, [this]() { setVisible(!isVisible()); });
     menu->addAction(toggleWindow);
     menu->addSeparator();
 
     auto sysPath = QProcessEnvironment::systemEnvironment().value("PATH");
     auto newPath = QStringList{};
-    for (const QJsonValueRef a: doc.value("path").toArray())
+    auto pathArray = doc.value("path").toArray();
+    for (const auto& a: qAsConst(pathArray))
         newPath.append(env(a.toString()));
     newPath.append(sysPath);
     if (!newPath.isEmpty()) {
@@ -237,27 +239,40 @@ Widget::Widget(QWidget *parent)
 
     int row = 0;
     int col = 0;
-    auto layout = new FlowLayout(ui->scrollAreaWidgetContents);
-    for(const QJsonValueRef a: doc.value("applications").toArray()) {
+    auto layout = new QGridLayout{ui->scrollAreaWidgetContents};
+    auto appArray = doc.value("applications").toArray();
+    for(const auto& a: qAsConst(appArray)) {
         auto o = a.toObject();
         auto icon = loadIcon(env(o.value("icon").toString()));
         auto text = env(o.value("text").toString());
         auto exec = env(o.value("exec").toString());
         auto work = env(o.value("work").toString());
-        auto launcher = new LauncherItem{icon, text, exec, work, ui->logView, ui->scrollAreaWidgetContents};
+        auto procEnv = QProcessEnvironment::systemEnvironment();
+        if (o.contains("env")) {
+            auto procEnvObj = o.value("env").toObject();
+            for (auto it = procEnvObj .constBegin(); it != procEnvObj .constEnd(); ++it){
+                auto k = it.key();
+                auto v = env(it.value().toString());
+                qDebug() << "custom env" << k << v;
+                procEnv.insert(k, v);
+            }
+        }
+        auto launcher = new LauncherItem{icon, text, exec, work, procEnv, ui->logView, ui->scrollAreaWidgetContents};
         auto action = menu->addAction(icon, text, launcher, &LauncherItem::startStop);
         action->setCheckable(true);
         connect(launcher, &LauncherItem::stateChange, action, &QAction::setChecked);
-        layout->addWidget(launcher);
+        layout->addWidget(launcher, row, col);
         if (++col == 3)
             { col = 0; row++; }
     }
     if (col==1 || col==2)
-        layout->addItem(newSpacer());
-    // layout->setRowStretch(row + 1, 1);
+        layout->addItem(newSpacer(), row, col, 1, 3-col);
+    layout->setRowStretch(row + 1, 1);
+    ui->scrollAreaWidgetContents->setLayout(layout);
+
     connect(ui->buttonShutdown, &QToolButton::clicked,
             QApplication::instance(), &QApplication::quit);
-    connect(ui->buttonHelp, &QToolButton::clicked, [this]() {
+    connect(ui->buttonHelp, &QToolButton::clicked, this, [this]() {
         AboutDialog(size() * 0.9, this).exec();
     });
     if (col + row > 0)

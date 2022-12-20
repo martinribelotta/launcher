@@ -2,6 +2,7 @@
 #define LAUNCHERITEM_H
 
 #include <QWidget>
+#include <QProcess>
 
 namespace Ui {
 class LauncherItem;
@@ -19,12 +20,16 @@ public:
                           const QString& text,
                           const QString& path,
                           const QString& workdir,
+                          const QProcessEnvironment &env,
                           QTextBrowser *log,
                           QWidget *parent = nullptr);
     ~LauncherItem();
 
 public slots:
     void startStop();
+
+    void start();
+    void stop();
 
 signals:
     void stateChange(bool started);
