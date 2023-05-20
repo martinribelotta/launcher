@@ -21,6 +21,8 @@
 #include <QDesktopWidget>
 #include <QMenu>
 #include <QStyle>
+#include <QFileDialog>
+#include <qtlocalpeer.h>
 
 #include <flowlayout.h>
 
@@ -88,12 +90,9 @@ static QString configurationFileName()
     return pathJoin({ sharePath(), CONF_NAME });
 }
 
-static QJsonObject loadConfig()
+static QJsonObject loadConfig(const QString& configFile)
 {
     QJsonParseError err;
-    auto configFile = configurationFileName();
-    if (configFile.isEmpty())
-        return {};
     auto doc = QJsonDocument::fromJson(readEntireFile(configFile), &err).object();
     if (err.error != QJsonParseError::NoError) {
         qDebug() << "Error loading " << configFile << ": " << err.errorString();
@@ -168,6 +167,25 @@ Widget::Widget(QWidget *parent)
     : QWidget(parent),
       ui(new Ui::Widget)
 {
+    auto configFile = configurationFileName();
+    if (!QFileInfo::exists(configFile))
+        configFile = QFileDialog::getOpenFileName(nullptr, tr("Select Configuration File"), QDir::homePath(), "*.json");
+
+    auto peer = new QtLocalPeer{this, configFile};
+    if (peer->isClient()) {
+        setProperty("isClient", true);
+        qDebug() << "Another instance for" << configFile << "is running";
+        qDebug() << "<Maximize return:" << peer->sendMessage("maximize", 1000);
+        return;
+    } else {
+        setProperty("isClient", false);
+        connect(peer, &QtLocalPeer::messageReceived, this, [this](const QString& msg) {
+            if (msg == "maximize") {
+                this->show();
+            }
+        });
+    }
+
     adjustInitialEnv();
     ui->setupUi(this);
     ui->logView->setFont(QFont{"Monospace, Consolas, Courier"});
@@ -191,7 +209,7 @@ Widget::Widget(QWidget *parent)
     ui->logView->hide();
     ui->buttonUpDown->setArrowType(Qt::UpArrow);
 
-    auto doc = loadConfig();
+    auto doc = loadConfig(configFile);
 
     if (doc.isEmpty()) {
         QJsonParseError err;
